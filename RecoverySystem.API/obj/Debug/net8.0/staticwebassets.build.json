@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "ZgDrc4z0dAtPyhcus1HZmrOYvXAsLVjOsZia8QtlUL4=",
+  "Source": "RecoverySystem.API",
+  "BasePath": "_content/RecoverySystem.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "RecoverySystem.API/wwwroot",
+      "Source": "RecoverySystem.API",
+      "ContentRoot": "/Users/ramziddingafurjanov/Desktop/Assignment/Assignments_fourth_semester/Programming/PatientRecoverySystem/RecoverySystem.API/wwwroot/",
+      "BasePath": "_content/RecoverySystem.API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}

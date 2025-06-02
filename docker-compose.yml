@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: RecoverySystem.API/Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./recovery-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    environment:
+      SA_PASSWORD: "P@ssw0rd1234"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
