@@ -1,0 +1,50 @@
+name: Deploy PatientRecoverySystem to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    - name: Build backend Docker image
+      run: docker build -t recovery-backend -f RecoverySystem.API/Dockerfile .
+
+    - name: Build frontend Docker image
+      run: docker build -t recovery-frontend ./recovery-frontend
+
+    - name: Save images to archive
+      run: |
+        docker save recovery-backend -o backend.tar
+        docker save recovery-frontend -o frontend.tar
+
+    - name: Copy Docker images to EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        source: |
+          backend.tar
+          frontend.tar
+          docker-compose.yml
+        target: "~/patient-recovery"
+
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          cd ~/patient-recovery
+          docker load -i backend.tar
+          docker load -i frontend.tar
+          docker compose down || true
+          docker compose up -d
