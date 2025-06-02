@@ -1,18 +1,6 @@
 version: '3.8'
 
 services:
-  backend:
-    image: recovery-backend
-    ports:
-      - "5000:5000"
-    depends_on:
-      - db
-
-  frontend:
-    image: recovery-frontend
-    ports:
-      - "80:80"
-
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: mssql
@@ -21,3 +9,21 @@ services:
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "P@ssw0rd1234", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: recovery-backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: recovery-frontend
+    ports:
+      - "80:80"
