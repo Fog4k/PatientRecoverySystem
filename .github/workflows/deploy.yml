@@ -13,30 +13,41 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
 
+    # Сборка backend-образа
     - name: Build backend Docker image
       run: docker build -t recovery-backend -f RecoverySystem.API/Dockerfile .
 
+    # Сборка frontend-образа
     - name: Build frontend Docker image
       run: docker build -t recovery-frontend ./recovery-frontend
 
-    - name: Save images to archive
+    # Сохраняем образы в tar-файлы
+    - name: Save Docker images
       run: |
         docker save recovery-backend -o backend.tar
         docker save recovery-frontend -o frontend.tar
+        ls -lh  # проверка, что файлы реально есть
 
-    - name: Copy Docker images to EC2
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_KEY }}
-        source: |
-          backend.tar
-          frontend.tar
-          docker-compose.yml
-        target: "~/patient-recovery"
+    # Устанавливаем rsync (для копирования по SSH)
+    - name: Install rsync
+      run: sudo apt-get update && sudo apt-get install -y rsync openssh-client
 
-    - name: Deploy via SSH
+    # Загружаем файлы вручную через rsync
+    - name: Upload files to EC2 via rsync
+      env:
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USER: ${{ secrets.EC2_USER }}
+        EC2_KEY: ${{ secrets.EC2_KEY }}
+      run: |
+        echo "$EC2_KEY" > private_key.pem
+        chmod 600 private_key.pem
+
+        rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" \
+          backend.tar frontend.tar docker-compose.yml \
+          $EC2_USER@$EC2_HOST:~/patient-recovery
+
+    # Запуск на EC2 через SSH
+    - name: Deploy on EC2 via SSH
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
