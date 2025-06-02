@@ -2,18 +2,14 @@ version: '3.8'
 
 services:
   backend:
-    build: 
-      context: .
-      dockerfile: RecoverySystem.API/Dockerfile
+    image: recovery-backend
     ports:
       - "5000:5000"
     depends_on:
       - db
 
   frontend:
-    build:
-      context: ./recovery-frontend
-      dockerfile: Dockerfile
+    image: recovery-frontend
     ports:
       - "80:80"
 
